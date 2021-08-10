@@ -1,18 +1,39 @@
-name: 'JavaScript Action Template'
+name: 'git-tag'
 
-description: 'Add description here'
+description: 'An action that can retrieve the current git version tag and optionally increment or push the new version to GitHub'
 
 inputs:
-  input-1:
-    description: 'Add a description here'
+  increment-major:
+    description: 'Flag to indicate whether to increment the major version.  When true, the major is incremented and minor/patch are set to 0.  Defaults to false.'
     required: true
-  input-2:
-    description: 'Add a description here'
+    default: 'false'
+  increment-minor:
+    description: 'Flag to indicate whether to increment the minor version.  When true, the minor is incremented and patch is set to 0.  Defaults to false.'
+    required: true
+    default: 'false'
+  increment-patch:
+    description: 'Flag to indicate whether to increment the patch version.  Defaults to false.'
+    required: true
+    default: 'false'
+  push-new-tag-to-repo:
+    description: 'Flag to indicate whether to push a new incremented tag to GitHub.  If none of the major/minor/patch flags are set, this will not happen.  Defaults to false.'
+    required: true
+    default: 'false'
+  separator:
+    description: 'The separator the version tag uses.  Defaults to "."'
+    required: true
+    default: '.'
+  prefix:
+    description: 'The prefix of the git tags if it has one.  Commonly used when tags contain the project in addition to the major.minor.patch.'
     required: false
+  includePrefixInOutput:
+    description: 'Flag indicating whether the prefix should be included in the TAG output or TAG environment variable if a prefix is present.'
+    required: true
+    default: 'true'
 
 outputs:
-  output-1:
-    description: 'Add a description here'
+  TAG:
+    description: 'If any of the increment tags are set, it returns the incremented tag otherwise it returns the latest tag for the repository.'
 
 runs:
   using: 'node12'

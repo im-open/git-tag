@@ -1,79 +1,75 @@
-# javascript-action-template
+# git-tag
 
-This template can be used to quickly start a new custom js action repository.  Click the `Use this template` button at the top to get started.
-
-## TODOs
-- Readme
-  - [ ] Update the Inputs section with the correct action inputs
-  - [ ] Update the Outputs section with the correct action outputs
-  - [ ] Update the Usage Example section with the correct usage   
-- package.json
-  - [ ] Update the `name` with the new action value
-- src/main.js
-  - [ ] Implement your custom javascript action
-- action.yml
-  - [ ] Fill in the correct name, description, inputs and outputs
-- .prettierrc.json
-  - [ ] Update any preferences you might have
-- CODEOWNERS
-  - [ ] Update as appropriate
-- Repository Settings
-  - [ ] On the *Options* tab check the box to *Automatically delete head branches*
-  - [ ] On the *Options* tab update the repository's visibility (must be done by an org owner)
-  - [ ] On the *Branches* tab add a branch protection rule
-    - [ ] Check *Require pull request reviews before merging*
-    - [ ] Check *Dismiss stale pull request approvals when new commits are pushed*
-    - [ ] Check *Require review from Code Owners*
-    - [ ] Check *Include Administrators*
-  - [ ] On the *Manage Access* tab add the appropriate groups
-- About Section (accessed on the main page of the repo, click the gear icon to edit)
-  - [ ] The repo should have a short description of what it is for
-  - [ ] Add one of the following topic tags:
-    | Topic Tag       | Usage                                    |
-    | --------------- | ---------------------------------------- |
-    | az              | For actions related to Azure             |
-    | code            | For actions related to building code     |
-    | certs           | For actions related to certificates      |
-    | db              | For actions related to databases         |
-    | git             | For actions related to Git               |
-    | iis             | For actions related to IIS               |
-    | microsoft-teams | For actions related to Microsoft Teams   |
-    | svc             | For actions related to Windows Services  |
-    | jira            | For actions related to Jira              |
-    | meta            | For actions related to running workflows |
-    | pagerduty       | For actions related to PagerDuty         |
-    | test            | For actions related to testing           |
-    | tf              | For actions related to Terraform         |
-  - [ ] Add any additional topics for an action if they apply    
-  - [ ] The Packages and Environments boxes can be unchecked
-    
+An action that can retrieve the current git version tag and optionally increment or push the new version to GitHub.  The action sets the TAG environment variable for subsequent steps and it adds the tag as an output.  If no tags are found for the repo, it defaults to `v1.0.0`.  If this will be used multiple times in one job, use the TAG output rather than the environment variable.  This action expects the git tag to be in the format <prefix><major>.<minor>.<patch> and the output may not be as expected if it is in a different format.
 
 ## Inputs
-| Parameter | Is Required | Default | Description           |
-| --------- | ----------- | ------- | --------------------- |
-| `input-1` | true        |         | Description goes here |
-| `input-2` | false       |         | Description goes here |
+| Parameter               | Is Required | Default | Description                                                                                                                              |
+| ----------------------- | ----------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `increment-major`       | false       | `false` | Flag to indicate whether to increment the major version.<br/>When true, the major is incremented and minor/patch are set to 0.           |
+| `increment-minor`       | false       | `false` | Flag to indicate whether to increment the minor version.<br/>When true, the minor is incremented and patch is set to 0.                  |
+| `increment-patch`       | false       | `false` | Flag to indicate whether to increment the patch version.                                                                                 |
+| `push-new-tag-to-repo`  | false       | `false` | Flag to indicate whether to push a new incremented tag to GitHub.  If none of the major/minor/patch flags are set, this will not happen. |
+| `separator`             | false       | `.`     | The separator the version tag uses.                                                                                                      |
+| `prefix`                | false       | *N/A*   | The prefix of the git tags if it has one.  Commonly used when tags contain the project in addition to the major.minor.patch.             |
+| `includePrefixInOutput` | false       | `true`  | Flag indicating whether the prefix should be included in the environment variable or output if one is present.                           |
 
 ## Outputs
-| Output     | Description           |
-| ---------- | --------------------- |
-| `output-1` | Description goes here |
+| Output | Description                                                                                                                  |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `TAG`  | If any of the increment tags are set, it returns the incremented tag otherwise it returns the latest tag for the repository. |
 
 ## Usage Examples
 
+Getting the version and using the ENV variable in later steps:
 ```yml
-# TODO: Fill in the correct usage
 jobs:
-  job1:
+  get-the-version-for-pack:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
 
-      - name: Add Step Here
-        uses: im-open/this-repo@v1.0.0
+      - name: Get the current version
+        uses: im-open/git-tag@v1.0.0
+      
+      - name: donet pack with current git version
+        run: dotnet pack -p:PackageVersion=${{ env.TAG }}
+        
+```
+
+Incrementing the version for multiple repositories, pushing the new tag for one and using the outputs in later steps:
+```yml
+jobs:
+  get-the-version-for-pack:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Increment the current db version and push it
+        id: db-version
+        uses: im-open/git-tag@v1.0.0
         with:
-          input-1: 'abc'
-          input-2: '123
+          increment-minor: true
+          separator: '-' 
+          prefix: 'DB-' # This project uses git tags like DB-1-0-0 
+          includePrefixInOutput: 'false'
+          push-new-tag-to-repo: 'true'
+      
+      - name: Get the current app version
+        id: app-version
+        uses: im-open/git-tag@v1.0.0
+        with:
+          increment-patch: true
+          prefix: 'BFF-' # This project uses git tags like BFF-1.1.0 
+          includePrefixInOutput: 'false'
+      
+      - name: pack db with current git version
+        working-directory: ./src/db
+        run: dotnet pack -p:PackageVersion=${{ steps.db-version.outputs.TAG }}
+      
+      - name: build app with current git version
+        working-directory: ./src/app
+        run: dotnet build -p:PackageVersion=${{ steps.app-version.outputs.TAG }}
+        
 ```
 
 ## Recompiling
