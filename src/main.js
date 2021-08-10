@@ -1,4 +1,5 @@
 const core = require('@actions/core');
+const github = require('@actions/github');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 
@@ -9,6 +10,9 @@ const pushTagToRepo = core.getInput('push-new-tag-to-repo') == 'true';
 const separator = core.getInput('separator') || '-';
 const prefixInput = core.getInput('prefix') || '';
 const includePrefixInOutput = core.getInput('include-prefix-in-output') == 'true';
+
+const ghToken = core.getInput('github-token');
+const octokit = github.getOctokit(ghToken);
 
 async function run() {
   let newTagToReturn; //This is what is set in the env var/output.  It may or may not include the prefix
@@ -58,11 +62,13 @@ async function run() {
 
   if (pushTagToRepo) {
     core.info(`Pushing tag '${newTagToPush}' to the repository...`);
-    await github.git.createRef({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
+    const git_sha =
+      github.context.eventName === 'pull_request' ? github.context.payload.pull_request.head.sha : github.context.sha;
+    await octokit.rest.git.createRef({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
       ref: `refs/tags/${newTagToPush}`,
-      sha: context.sha
+      sha: git_sha
     });
   }
 }

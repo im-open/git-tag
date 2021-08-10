@@ -3,6 +3,9 @@ name: 'git-tag'
 description: 'An action that can retrieve the current git version tag and optionally increment or push the new version to GitHub'
 
 inputs:
+  github-token:
+    description: 'Used to create the new tag. Value is generally: secrets.GITHUB_TOKEN.  Required when pushing a new tag.'
+    required: false
   increment-major:
     description: 'Flag to indicate whether to increment the major version.  When true, the major is incremented and minor/patch are set to 0.  Defaults to false.'
     required: true

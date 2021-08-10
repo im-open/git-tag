@@ -5,6 +5,7 @@ An action that can retrieve the current git version tag and optionally increment
 ## Inputs
 | Parameter               | Is Required | Default | Description                                                                                                                              |
 | ----------------------- | ----------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `github-token`          | false       | *N/A*   | Used to create the new tag. Value is generally: secrets.GITHUB_TOKEN.  Required when pushing a new tag.                                  |
 | `increment-major`       | false       | `false` | Flag to indicate whether to increment the major version.<br/>When true, the major is incremented and minor/patch are set to 0.           |
 | `increment-minor`       | false       | `false` | Flag to indicate whether to increment the minor version.<br/>When true, the minor is incremented and patch is set to 0.                  |
 | `increment-patch`       | false       | `false` | Flag to indicate whether to increment the patch version.                                                                                 |
@@ -30,7 +31,7 @@ jobs:
 
       - name: Get the current version
         uses: im-open/git-tag@v1.0.0
-      
+        
       - name: donet pack with current git version
         run: dotnet pack -p:PackageVersion=${{ env.TAG }}
         
@@ -53,6 +54,7 @@ jobs:
           prefix: 'DB-' # This project uses git tags like DB-1-0-0 
           includePrefixInOutput: 'false'
           push-new-tag-to-repo: 'true'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Get the current app version
         id: app-version
