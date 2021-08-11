@@ -12,7 +12,7 @@ An action that can retrieve the current git version tag and optionally increment
 | `push-new-tag-to-repo`  | false       | `false` | Flag to indicate whether to push a new incremented tag to GitHub.  If none of the major/minor/patch flags are set, this will not happen. |
 | `separator`             | false       | `.`     | The separator the version tag uses.                                                                                                      |
 | `prefix`                | false       | *N/A*   | The prefix of the git tags if it has one.  Commonly used when tags contain the project in addition to the major.minor.patch.             |
-| `includePrefixInOutput` | false       | `true`  | Flag indicating whether the prefix should be included in the environment variable or output if one is present.                           |
+| `includePrefixInOutput` | false       | `false` | Flag indicating whether the prefix should be included in the environment variable or output if one is present.                           |
 
 ## Outputs
 | Output | Description                                                                                                                  |
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Get the current version
-        uses: im-open/git-tag@v1.0.0
+        uses: im-open/git-tag@v1.0.1
         
       - name: donet pack with current git version
         run: dotnet pack -p:PackageVersion=${{ env.TAG }}
@@ -47,7 +47,7 @@ jobs:
 
       - name: Increment the current db version and push it
         id: db-version
-        uses: im-open/git-tag@v1.0.0
+        uses: im-open/git-tag@v1.0.1
         with:
           increment-minor: true
           separator: '-' 
@@ -58,7 +58,7 @@ jobs:
       
       - name: Get the current app version
         id: app-version
-        uses: im-open/git-tag@v1.0.0
+        uses: im-open/git-tag@v1.0.1
         with:
           increment-patch: true
           prefix: 'BFF-' # This project uses git tags like BFF-1.1.0 

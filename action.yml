@@ -32,7 +32,7 @@ inputs:
   includePrefixInOutput:
     description: 'Flag indicating whether the prefix should be included in the TAG output or TAG environment variable if a prefix is present.'
     required: true
-    default: 'true'
+    default: 'false'
 
 outputs:
   TAG:
