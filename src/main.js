@@ -15,6 +15,8 @@ const ghToken = core.getInput('github-token');
 const octokit = github.getOctokit(ghToken);
 
 async function run() {
+  core.warning('This action has been deprecated.  Use https://github.com/im-open/git-version-lite instead.');
+
   let newTagToReturn; //This is what is set in the env var/output.  It may or may not include the prefix
   let newTagToPush; //This is the new tag and it will include the prefix.
 

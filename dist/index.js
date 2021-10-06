@@ -5560,6 +5560,7 @@ var includePrefixInOutput = core.getInput('include-prefix-in-output') == 'true';
 var ghToken = core.getInput('github-token');
 var octokit = github.getOctokit(ghToken);
 async function run() {
+  core.warning('This action has been deprecated.  Use https://github.com/im-open/git-version-lite instead.');
   let newTagToReturn;
   let newTagToPush;
   try {
